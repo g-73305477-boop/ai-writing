@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import { PracticeWord, CanvasRef } from './types';
 import { generatePronunciation, checkHandwriting } from './services/geminiService';
@@ -49,8 +48,6 @@ const App = () => {
   
   const handleError = (error: unknown, defaultMessage: string) => {
       console.error(defaultMessage, error);
-      // Display a generic message to the user instead of a specific API key error.
-      // This improves the user experience on new deployments.
       setFeedback(defaultMessage);
       setFeedbackType('info');
   }
@@ -88,7 +85,6 @@ const App = () => {
     setFeedbackType('info');
     try {
       const result = await checkHandwriting(imageDataUrl, currentWord.word);
-      // More robust check: trim, lowercase, and check if it starts with "correct"
       const isCorrect = result.trim().toLowerCase().startsWith('correct');
       setFeedback(isCorrect ? 'Correct!' : 'Incorrect, please try again.');
       setFeedbackType(isCorrect ? 'correct' : 'incorrect');
