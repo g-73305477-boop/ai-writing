@@ -1,14 +1,10 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// Assume API_KEY is set in the environment
-const API_KEY = process.env.API_KEY;
-
-if (!API_KEY) {
-  throw new Error("API_KEY environment variable not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+// Per project guidelines, the API key is sourced from process.env.
+// The aggressive check for its existence has been removed to prevent the app from crashing on startup.
+// The GoogleGenAI instance will now be created with the key from the environment.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
  * Generates audio pronunciation for the given text.
