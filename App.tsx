@@ -54,11 +54,9 @@ const App = () => {
   
   const handleError = (error: unknown, defaultMessage: string) => {
       console.error(defaultMessage, error);
-      if (error instanceof Error && error.message.includes("API_KEY")) {
-          setFeedback("Error: Missing API Key. Please configure it in your deployment settings.");
-      } else {
-          setFeedback(defaultMessage);
-      }
+      // Display a generic message to the user instead of a specific API key error.
+      // This improves the user experience on new deployments.
+      setFeedback(defaultMessage);
       setFeedbackType('info');
   }
 
