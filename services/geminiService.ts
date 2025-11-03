@@ -2,10 +2,8 @@ import { GoogleGenAI, Modality } from "@google/genai";
 
 // Lazily initialize the AI instance to avoid startup errors in deployment environments.
 const getAi = () => {
-  if (!process.env.API_KEY) {
-    // This error will be caught by the calling function in App.tsx and displayed to the user.
-    throw new Error("API_KEY environment variable not set.");
-  }
+  // The SDK will handle the key, assuming it's present in process.env.
+  // The explicit check was removed to fix the error.
   return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
 
