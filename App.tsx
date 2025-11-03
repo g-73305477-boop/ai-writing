@@ -1,4 +1,5 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+
+import React, { useState, useRef, useCallback } from 'react';
 import { PracticeWord, CanvasRef } from './types';
 import { generatePronunciation, checkHandwriting } from './services/geminiService';
 import { decode, decodeAudioData } from './utils/audioUtils';
@@ -18,16 +19,7 @@ const App = () => {
   const [isChecking, setIsChecking] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('idle');
-  const [apiKeyMissing, setApiKeyMissing] = useState(false);
   const canvasRef = useRef<CanvasRef>(null);
-
-  useEffect(() => {
-    // Check for the API key on component mount. This is the most common
-    // deployment issue, so we make it obvious to the user.
-    if (!process.env.API_KEY) {
-      setApiKeyMissing(true);
-    }
-  }, []);
 
   const currentWord = PRACTICE_WORDS[currentWordIndex];
 
@@ -64,7 +56,6 @@ const App = () => {
   }
 
   const handlePronunciation = useCallback(async () => {
-    if (apiKeyMissing) return;
     try {
       setFeedback('Getting pronunciation...');
       setFeedbackType('info');
@@ -80,10 +71,10 @@ const App = () => {
     } catch (error) {
       handleError(error, 'Could not fetch pronunciation.');
     }
-  }, [currentWord.word, apiKeyMissing]);
+  }, [currentWord.word]);
 
   const handleCheckHandwriting = useCallback(async () => {
-    if (apiKeyMissing || !canvasRef.current) return;
+    if (!canvasRef.current) return;
 
     const imageDataUrl = canvasRef.current.toDataURL();
     if (imageDataUrl.length < 100) { 
@@ -106,7 +97,7 @@ const App = () => {
     } finally {
       setIsChecking(false);
     }
-  }, [currentWord.word, apiKeyMissing]);
+  }, [currentWord.word]);
   
   const clearCanvas = () => {
     canvasRef.current?.clear();
@@ -123,11 +114,6 @@ const App = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      {apiKeyMissing && (
-        <div className="w-full max-w-md p-4 mb-4 text-sm text-red-800 bg-red-100 rounded-lg shadow" role="alert">
-          <span className="font-bold">Configuration Error:</span> Your Gemini API Key is not set. Please add it to your Netlify environment variables to enable AI features.
-        </div>
-      )}
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
         <p className="text-xs text-center text-gray-500 mb-4">Created by kwang Chien Team 1</p>
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-4">Handwriting Practice</h1>
@@ -135,7 +121,7 @@ const App = () => {
           <p className="text-xl text-gray-600">Write the word:</p>
           <div className="flex items-center justify-center my-2">
             <p className="text-4xl font-bold text-blue-600">{currentWord.word}</p>
-            <button onClick={handlePronunciation} className="ml-4 p-2 rounded-full hover:bg-gray-200" aria-label="Listen to pronunciation" disabled={apiKeyMissing}>
+            <button onClick={handlePronunciation} className="ml-4 p-2 rounded-full hover:bg-gray-200" aria-label="Listen to pronunciation">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.858 17.142a5 5 0 010-7.072m2.828 9.9a9 9 0 010-12.728M12 18.5a.5.5 0 01-1 0v-13a.5.5 0 011 0v13z" />
               </svg>
@@ -145,7 +131,7 @@ const App = () => {
         <Canvas ref={canvasRef} width={380} height={200} feedbackType={feedbackType} />
         <div className="flex justify-between mt-4">
           <button onClick={clearCanvas} className="px-4 py-2 text-white bg-gray-500 rounded hover:bg-gray-600">Clear</button>
-          <button onClick={handleCheckHandwriting} disabled={isChecking || apiKeyMissing} className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600 disabled:bg-blue-300">
+          <button onClick={handleCheckHandwriting} disabled={isChecking} className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600 disabled:bg-blue-300">
             {isChecking ? 'Checking...' : 'A.I Check'}
           </button>
         </div>

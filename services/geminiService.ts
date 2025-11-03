@@ -1,9 +1,9 @@
+
 import { GoogleGenAI, Modality } from "@google/genai";
 
 // Lazily initialize the AI instance to avoid startup errors in deployment environments.
 const getAi = () => {
-  // The SDK will handle the key, assuming it's present in process.env.
-  // The explicit check was removed to fix the error.
+  // Fix: Per the coding guidelines, the API key must be obtained from process.env.API_KEY.
   return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
 
