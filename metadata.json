@@ -1,0 +1,5 @@
+{
+  "name": "AI Spelling & Writing Practice",
+  "description": "An interactive web app for children to practice spelling and writing common words. The app displays a word and a picture, provides audio pronunciation, and uses AI to check the user's handwriting on a digital canvas.",
+  "requestFramePermissions": []
+}
