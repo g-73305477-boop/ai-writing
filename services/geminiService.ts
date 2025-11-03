@@ -1,10 +1,14 @@
-
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// Per project guidelines, the API key is sourced from process.env.
-// The aggressive check for its existence has been removed to prevent the app from crashing on startup.
-// The GoogleGenAI instance will now be created with the key from the environment.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazily initialize the AI instance to avoid startup errors in deployment environments.
+const getAi = () => {
+  if (!process.env.API_KEY) {
+    // This error will be caught by the calling function in App.tsx and displayed to the user.
+    throw new Error("API_KEY environment variable not set.");
+  }
+  return new GoogleGenAI({ apiKey: process.env.API_KEY });
+};
+
 
 /**
  * Generates audio pronunciation for the given text.
@@ -13,6 +17,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
  */
 export const generatePronunciation = async (text: string): Promise<string | null> => {
   try {
+    const ai = getAi();
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash-preview-tts",
       contents: [{ parts: [{ text: `Say: ${text}` }] }],
@@ -45,6 +50,7 @@ export const generatePronunciation = async (text: string): Promise<string | null
  */
 export const checkHandwriting = async (imageDataUrl: string, word: string): Promise<string> => {
   try {
+    const ai = getAi();
     // Gemini API expects only the base64 data, not the full data URL prefix
     const base64Data = imageDataUrl.split(',')[1];
 

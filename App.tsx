@@ -51,6 +51,16 @@ const App = () => {
     source.connect(audioContext.destination);
     source.start();
   };
+  
+  const handleError = (error: unknown, defaultMessage: string) => {
+      console.error(defaultMessage, error);
+      if (error instanceof Error && error.message.includes("API_KEY")) {
+          setFeedback("Error: Missing API Key. Please configure it in your deployment settings.");
+      } else {
+          setFeedback(defaultMessage);
+      }
+      setFeedbackType('info');
+  }
 
   const handlePronunciation = useCallback(async () => {
     try {
@@ -63,10 +73,10 @@ const App = () => {
         setFeedbackType('idle');
       } else {
         setFeedback('Could not get pronunciation.');
+        setFeedbackType('info');
       }
     } catch (error) {
-      console.error('Error getting pronunciation:', error);
-      setFeedback('Could not fetch pronunciation.');
+      handleError(error, 'Could not fetch pronunciation.');
     }
   }, [currentWord.word]);
 
@@ -89,9 +99,7 @@ const App = () => {
       setFeedback(isCorrect ? 'Correct!' : 'Incorrect, please try again.');
       setFeedbackType(isCorrect ? 'correct' : 'incorrect');
     } catch (error) {
-      console.error('Error checking handwriting:', error);
-      setFeedback('Error checking handwriting. Please try again.');
-      setFeedbackType('info');
+      handleError(error, 'Error checking handwriting. Please try again.');
     } finally {
       setIsChecking(false);
     }
