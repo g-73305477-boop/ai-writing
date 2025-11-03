@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { PracticeWord, CanvasRef } from './types';
 import { generatePronunciation, checkHandwriting } from './services/geminiService';
-import { decode } from './utils/audioUtils';
+import { decode, decodeAudioData } from './utils/audioUtils';
 import Canvas from './components/Canvas';
 
 const PRACTICE_WORDS: PracticeWord[] = [
@@ -30,26 +30,20 @@ const App = () => {
   }, []);
 
   const playAudio = async (base64Audio: string) => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-    const decodedData = decode(base64Audio);
-    
-    const sampleRate = 24000;
-    const numChannels = 1;
-
-    const pcmData = new Int16Array(decodedData.buffer);
-    const frameCount = pcmData.length / numChannels;
-    
-    const audioBuffer = audioContext.createBuffer(numChannels, frameCount, sampleRate);
-    const channelData = audioBuffer.getChannelData(0);
-
-    for (let i = 0; i < frameCount; i++) {
-      channelData[i] = pcmData[i * numChannels + 0] / 32768.0;
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      const decodedData = decode(base64Audio);
+      const audioBuffer = await decodeAudioData(decodedData, audioContext);
+  
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      source.start();
+    } catch (error) {
+      console.error("Failed to play audio:", error);
+      setFeedback("Could not play the pronunciation audio.");
+      setFeedbackType('info');
     }
-
-    const source = audioContext.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(audioContext.destination);
-    source.start();
   };
   
   const handleError = (error: unknown, defaultMessage: string) => {
@@ -93,7 +87,8 @@ const App = () => {
     setFeedbackType('info');
     try {
       const result = await checkHandwriting(imageDataUrl, currentWord.word);
-      const isCorrect = result.trim().toLowerCase() === 'correct';
+      // More robust check: trim, lowercase, and check if it starts with "correct"
+      const isCorrect = result.trim().toLowerCase().startsWith('correct');
       setFeedback(isCorrect ? 'Correct!' : 'Incorrect, please try again.');
       setFeedbackType(isCorrect ? 'correct' : 'incorrect');
     } catch (error) {

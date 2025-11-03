@@ -60,7 +60,7 @@ export const checkHandwriting = async (imageDataUrl: string, word: string): Prom
     };
     
     const textPart = {
-      text: `Does the handwriting in this image say the word "${word}"? Your answer must be a single word: either "Correct" or "Incorrect". Do not add any other explanation.`,
+      text: `You are an AI teacher helping a student practice their writing. The student was asked to write the word "${word}". Look at the image and evaluate their handwriting. Respond with a single word: "Correct" if it is legible and clearly "${word}", and "Incorrect" otherwise. Do not add any other explanation.`,
     };
 
     const response = await ai.models.generateContent({
